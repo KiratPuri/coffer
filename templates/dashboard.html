@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static "dashboard.css" %}">
+    <style>
+      .grid-container {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        background-color: #2196F3;
+        padding: 10px;
+      }
+      .grid-item {
+        background-color: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(0, 0, 0, 0.8);
+        padding: 20px;
+        font-size: 30px;
+        text-align: center;
+      }
+      </style>
+    <title>Dashboard</title>
+</head>
+
+<body>
+     <h1>Data Dashboard</h1>
+     <p>Welcome to the website!!</p>
+      <div>
+        <p>Filters :-</p>
+        <table>
+          <thead>
+            <th>Field</th>
+            <th>Value</th>
+          </thead>
+          <tr>
+            <td>
+                <select id="FilterType" name="FilterType"></select>
+                <select id="FilterValue" name="FilterValue"></select>
+                <input id="BtnSearchFilter" type="submit" name="" value="Submit">
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="grid-container">
+        <div class="grid-item"><canvas id="intensityChart"></canvas></div>
+        <div class="grid-item"><canvas id="likelihoodChart"></canvas></div>
+        <div class="grid-item"><canvas id="relevanceChart"></canvas></div>
+        <div class="grid-item"><canvas id="yearChart"></canvas></div>
+        <div class="grid-item"><canvas id="countryChart"></canvas></div>
+        <div class="grid-item"><canvas id="topicsChart"></canvas></div>
+        <div class="grid-item"><canvas id="regionChart"></canvas></div>
+        <div class="grid-item"><canvas id="cityChart"></canvas></div>
+      </div>
+      
+      <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+      <script type="text/javascript">
+        $(document).ready(function(){
+          loadFilterTypes();
+          $("#FilterType").on('change', function(){
+            loadFilterValue($("#FilterType").val());
+          });
+          $("#BtnSearchFilter").on('click', function(){
+            filterData();
+          });
+          LoadChartData('', '');
+        });
+        async function loadFilterTypes()
+        {
+          //Call api filter api
+          const response = await fetch("http://127.0.0.1:8000/api/filters/");
+          const data = await response.json();
+          
+          var filterTypes = Object.keys(data);
+          $("#FilterType").append("<option value=''>Select Filter Type</option>"); 
+          for (i in filterTypes) {                       
+            $("#FilterType").append("<option value='"+filterTypes[i]+"'>"+filterTypes[i].replace("_", " ").toUpperCase()+"</option>");
+          }
+
+        }
+        async function loadFilterValue(filterType)
+        {
+          //Clear Filter value
+          $("#FilterValue").empty();
+          //Call api filter api
+          const response = await fetch("http://127.0.0.1:8000/api/filters/");
+          const data = await response.json();
+          
+          var filterValue = data[filterType];
+          
+          $("#FilterValue").append("<option value=''>Select Filter Value</option>"); 
+          for (i in filterValue) {                        
+                 $("#FilterValue").append("<option value='"+filterValue[i]+"'>"+filterValue[i]+"</option>");
+          }
+        }
+        function filterData(){
+          //Check if filter's are selected
+          if($("#FilterType").val() != '' && $("#FilterValue").val() != '')
+            {
+              LoadChartData($("#FilterType").val(), $("#FilterValue").val());
+            }
+            else{
+                alert('Filter not selected');
+            }
+        }
+      </script>
+          <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          <script src = "{% static 'graphs.js' %}"></script>
+          <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+</html>
